@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quan-ly-chi-tieu-v1';
+const CACHE_NAME = 'quan-ly-chi-tieu-v2'; // Tăng version để force update
 const urlsToCache = [
   './',
   './index.html',

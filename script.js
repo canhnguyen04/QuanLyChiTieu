@@ -163,20 +163,23 @@ let editingId = null;
 // 1.1. Thêm format số tiền khi blur (bấm ra ngoài input)
 amount.addEventListener('blur', (e) => {
   // Lấy giá trị và xóa tất cả dấu phẩy cũ
-  let value = e.target.value.replace(/,/g, '');
+  let value = e.target.value.replace(/,/g, '').trim();
   
-  // Nếu có giá trị và là số
+  // Nếu có giá trị và là số thì format
   if (value && !isNaN(value) && value !== '') {
     // Format thủ công bằng regex để không mất số
     const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     e.target.value = formatted;
   }
+  // Nếu không phải số hoặc rỗng, giữ nguyên (không làm gì)
 });
 
 // Xóa format khi focus (bấm vào input) để dễ chỉnh sửa
 amount.addEventListener('focus', (e) => {
   let value = e.target.value.replace(/,/g, '');
-  e.target.value = value;
+  if (value) {
+    e.target.value = value;
+  }
 });
 
 // 2. Hàm thêm giao dịch mới
