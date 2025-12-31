@@ -15,6 +15,22 @@ const localStorageTransactions = JSON.parse(
 let transactions =
   localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
 
+// Biến để lưu ID đang chỉnh sửa
+let editingId = null;
+
+// 1.1. Thêm format số tiền khi nhập (hiển thị dấu phẩy)
+amount.addEventListener('input', (e) => {
+  // Lấy giá trị và xóa tất cả dấu phẩy cũ
+  let value = e.target.value.replace(/,/g, '');
+  
+  // Nếu có giá trị và là số
+  if (value && !isNaN(value)) {
+    // Format với dấu phẩy
+    const formatted = Number(value).toLocaleString('en-US');
+    e.target.value = formatted;
+  }
+});
+
 // 2. Hàm thêm giao dịch mới
 function addTransaction(e) {
   e.preventDefault(); // Chặn việc load lại trang của form
@@ -25,20 +41,34 @@ function addTransaction(e) {
     // Lấy loại giao dịch từ nút radio
     const type = document.querySelector('input[name="type"]:checked').value;
     
-    // Chuyển đổi số tiền: nếu là chi tiêu thì nhân với -1
-    const finalAmount = type === 'expense' ? -Math.abs(+amount.value) : Math.abs(+amount.value);
+    // Xóa dấu phẩy trước khi lưu
+    const cleanAmount = amount.value.replace(/,/g, '');
     
-    const transaction = {
-      id: generateID(),
-      text: text.value,
-      amount: finalAmount
-    };
+    // Chuyển đổi số tiền: nếu là chi tiêu thì nhân với -1
+    const finalAmount = type === 'expense' ? -Math.abs(+cleanAmount) : Math.abs(+cleanAmount);
+    
+    // Nếu đang chỉnh sửa
+    if (editingId !== null) {
+      // Tìm và cập nhật giao dịch
+      const index = transactions.findIndex(t => t.id === editingId);
+      if (index !== -1) {
+        transactions[index].text = text.value;
+        transactions[index].amount = finalAmount;
+      }
+      editingId = null;
+      document.querySelector('.btn').textContent = 'Thêm Giao Dịch';
+    } else {
+      // Thêm giao dịch mới
+      const transaction = {
+        id: generateID(),
+        text: text.value,
+        amount: finalAmount
+      };
+      transactions.push(transaction);
+    }
 
-    transactions.push(transaction);
-
-    addTransactionDOM(transaction);
-    updateValues();
     updateLocalStorage();
+    init();
 
     // Xóa trắng ô nhập liệu sau khi thêm
     text.value = '';
@@ -68,7 +98,8 @@ function addTransactionDOM(transaction) {
   const formattedAmount = Math.abs(transaction.amount).toLocaleString('vi-VN');
 
   item.innerHTML = `
-    ${transaction.text} <span>${sign}${formattedAmount} đ</span> 
+    ${transaction.text} <span>${sign}${formattedAmount} đ</span>
+    <button class="edit-btn" onclick="editTransaction(${transaction.id})">✏️</button>
     <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
   `;
 
@@ -101,9 +132,34 @@ function updateValues() {
 
 // 6. Hàm xóa giao dịch
 function removeTransaction(id) {
-  transactions = transactions.filter(transaction => transaction.id !== id);
-  updateLocalStorage();
-  init();
+  if (confirm('Bạn có chắc muốn xóa giao dịch này?')) {
+    transactions = transactions.filter(transaction => transaction.id !== id);
+    updateLocalStorage();
+    init();
+  }
+}
+
+// 6.1. Hàm sửa giao dịch
+function editTransaction(id) {
+  const transaction = transactions.find(t => t.id === id);
+  if (transaction) {
+    // Điền thông tin vào form
+    text.value = transaction.text;
+    amount.value = Math.abs(transaction.amount).toLocaleString('en-US');
+    
+    // Chọn đúng loại giao dịch
+    const type = transaction.amount < 0 ? 'expense' : 'income';
+    document.querySelector(`input[name="type"][value="${type}"]`).checked = true;
+    
+    // Lưu ID đang chỉnh sửa
+    editingId = id;
+    
+    // Đổi text nút
+    document.querySelector('.btn').textContent = 'Cập Nhật';
+    
+    // Scroll lên form
+    form.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 // 7. Hàm lưu vào LocalStorage

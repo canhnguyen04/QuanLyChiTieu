@@ -115,6 +115,28 @@ h3 {
   opacity: 1;
 }
 
+/* Nút sửa (✏️) */
+.edit-btn {
+  cursor: pointer;
+  background-color: #3498db;
+  border: 0;
+  color: #fff;
+  font-size: 16px;
+  line-height: 20px;
+  padding: 2px 5px;
+  position: absolute;
+  top: 50%;
+  left: -30px;
+  transform: translate(-100%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 3px;
+}
+
+.list li:hover .edit-btn {
+  opacity: 1;
+}
+
 /* Form nhập liệu */
 .form-control {
   margin-bottom: 20px;
