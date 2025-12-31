@@ -165,11 +165,23 @@ amount.addEventListener('input', (e) => {
   // Lấy giá trị và xóa tất cả dấu phẩy cũ
   let value = e.target.value.replace(/,/g, '');
   
+  // Lưu vị trí con trỏ
+  let cursorPosition = e.target.selectionStart;
+  let oldLength = e.target.value.length;
+  
   // Nếu có giá trị và là số
   if (value && !isNaN(value)) {
     // Format với dấu phẩy
     const formatted = Number(value).toLocaleString('en-US');
     e.target.value = formatted;
+    
+    // Tính toán vị trí con trỏ mới
+    let newLength = formatted.length;
+    let diff = newLength - oldLength;
+    let newPosition = cursorPosition + diff;
+    
+    // Đặt lại vị trí con trỏ
+    e.target.setSelectionRange(newPosition, newPosition);
   }
 });
 
