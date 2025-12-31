@@ -160,29 +160,23 @@ let transactions =
 // Biến để lưu ID đang chỉnh sửa
 let editingId = null;
 
-// 1.1. Thêm format số tiền khi nhập (hiển thị dấu phẩy)
-amount.addEventListener('input', (e) => {
+// 1.1. Thêm format số tiền khi blur (bấm ra ngoài input)
+amount.addEventListener('blur', (e) => {
   // Lấy giá trị và xóa tất cả dấu phẩy cũ
   let value = e.target.value.replace(/,/g, '');
-  
-  // Lưu vị trí con trỏ
-  let cursorPosition = e.target.selectionStart;
-  let oldLength = e.target.value.length;
   
   // Nếu có giá trị và là số
   if (value && !isNaN(value)) {
     // Format với dấu phẩy
     const formatted = Number(value).toLocaleString('en-US');
     e.target.value = formatted;
-    
-    // Tính toán vị trí con trỏ mới
-    let newLength = formatted.length;
-    let diff = newLength - oldLength;
-    let newPosition = cursorPosition + diff;
-    
-    // Đặt lại vị trí con trỏ
-    e.target.setSelectionRange(newPosition, newPosition);
   }
+});
+
+// Xóa format khi focus (bấm vào input) để dễ chỉnh sửa
+amount.addEventListener('focus', (e) => {
+  let value = e.target.value.replace(/,/g, '');
+  e.target.value = value;
 });
 
 // 2. Hàm thêm giao dịch mới
