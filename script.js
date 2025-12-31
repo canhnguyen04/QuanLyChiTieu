@@ -163,6 +163,10 @@ let editingId = null;
 // Biến để track xem có hiển thị tất cả không
 let showAll = false;
 
+// Biến để lưu tháng hiện tại đang xem
+let currentViewMonth = new Date().getMonth();
+let currentViewYear = new Date().getFullYear();
+
 // 1.1. Thêm format số tiền khi blur (bấm ra ngoài input)
 amount.addEventListener('blur', (e) => {
   // Lấy giá trị và xóa tất cả dấu phẩy cũ
@@ -216,7 +220,8 @@ function addTransaction(e) {
       const transaction = {
         id: generateID(),
         text: text.value,
-        amount: finalAmount
+        amount: finalAmount,
+        date: new Date().toISOString() // Thêm ngày giờ
       };
       transactions.push(transaction);
     }
@@ -327,26 +332,129 @@ function updateLocalStorage() {
 function init() {
   list.innerHTML = '';
   
+  // Tạo dropdown tháng
+  populateMonthSelect();
+  
+  // Lọc giao dịch theo tháng đang xem
+  const filteredTransactions = transactions.filter(t => {
+    if (!t.date) return false;
+    const d = new Date(t.date);
+    return d.getMonth() === currentViewMonth && d.getFullYear() === currentViewYear;
+  });
+  
   // Sắp xếp giao dịch mới nhất lên đầu
-  const sortedTransactions = [...transactions].reverse();
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => 
+    new Date(b.date) - new Date(a.date)
+  );
   
   // Chỉ hiển thị 5 giao dịch gần nhất nếu chưa bấm "Xem tất cả"
   const displayTransactions = showAll ? sortedTransactions : sortedTransactions.slice(0, 5);
   
   displayTransactions.forEach(addTransactionDOM);
   updateValues();
+  updateMonthSummary(filteredTransactions);
   
   // Hiển thị/ẩn nút "Xem tất cả"
   const showMoreContainer = document.getElementById('show-more-container');
   const showMoreBtn = document.getElementById('show-more-btn');
   
-  if (transactions.length > 5) {
+  if (filteredTransactions.length > 5) {
     showMoreContainer.style.display = 'block';
-    showMoreBtn.textContent = showAll ? 'Thu gọn' : `Xem tất cả (${transactions.length - 5} giao dịch)`;
+    showMoreBtn.textContent = showAll ? 'Thu gọn' : `Xem tất cả (${filteredTransactions.length - 5} giao dịch)`;
   } else {
     showMoreContainer.style.display = 'none';
   }
 }
+
+// Tạo dropdown chọn tháng
+function populateMonthSelect() {
+  const select = document.getElementById('month-select');
+  select.innerHTML = '';
+  
+  // Lấy tháng đầu tiên và cuối cùng có giao dịch
+  const now = new Date();
+  const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+  
+  const months = [];
+  let currentDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+  // Tạo list 12 tháng gần nhất
+  for (let i = 0; i < 12; i++) {
+    months.unshift(new Date(currentDate));
+    currentDate.setMonth(currentDate.getMonth() - 1);
+  }
+  
+  months.forEach(date => {
+    const option = document.createElement('option');
+    const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                        'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+    option.value = `${date.getFullYear()}-${date.getMonth()}`;
+    option.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    if (date.getMonth() === currentViewMonth && date.getFullYear() === currentViewYear) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+}
+
+// Cập nhật tổng kết tháng
+function updateMonthSummary(monthTransactions) {
+  const summary = document.getElementById('month-summary');
+  
+  if (monthTransactions.length === 0) {
+    summary.style.display = 'none';
+    return;
+  }
+  
+  summary.style.display = 'block';
+  
+  const income = monthTransactions
+    .filter(t => t.amount > 0)
+    .reduce((sum, t) => sum + t.amount, 0);
+    
+  const expense = Math.abs(monthTransactions
+    .filter(t => t.amount < 0)
+    .reduce((sum, t) => sum + t.amount, 0));
+    
+  const balance = income - expense;
+  
+  document.getElementById('month-income').textContent = `+${income.toLocaleString('vi-VN')} đ`;
+  document.getElementById('month-expense').textContent = `-${expense.toLocaleString('vi-VN')} đ`;
+  
+  const balanceEl = document.getElementById('month-balance');
+  balanceEl.textContent = `${balance >= 0 ? '+' : ''}${balance.toLocaleString('vi-VN')} đ`;
+  balanceEl.className = `money ${balance >= 0 ? 'plus' : 'minus'}`;
+}
+
+// Xử lý chọn tháng
+document.getElementById('month-select').addEventListener('change', (e) => {
+  const [year, month] = e.target.value.split('-');
+  currentViewYear = parseInt(year);
+  currentViewMonth = parseInt(month);
+  showAll = false;
+  init();
+});
+
+// Xử lý nút prev/next month
+document.getElementById('prev-month').addEventListener('click', () => {
+  currentViewMonth--;
+  if (currentViewMonth < 0) {
+    currentViewMonth = 11;
+    currentViewYear--;
+  }
+  showAll = false;
+  init();
+});
+
+document.getElementById('next-month').addEventListener('click', () => {
+  currentViewMonth++;
+  if (currentViewMonth > 11) {
+    currentViewMonth = 0;
+    currentViewYear++;
+  }
+  showAll = false;
+  init();
+});
 
 // Xử lý nút "Xem tất cả"
 document.getElementById('show-more-btn').addEventListener('click', () => {

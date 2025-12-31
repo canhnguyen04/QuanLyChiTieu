@@ -83,6 +83,32 @@
         </div>
 
         <h3>Lịch sử giao dịch</h3>
+        
+        <!-- Bộ lọc tháng -->
+        <div class="month-filter">
+            <button id="prev-month" class="month-nav-btn">◀</button>
+            <select id="month-select" class="month-select">
+                <!-- Sẽ được tạo bởi JS -->
+            </select>
+            <button id="next-month" class="month-nav-btn">▶</button>
+        </div>
+        
+        <!-- Tổng kết tháng -->
+        <div id="month-summary" class="month-summary" style="display: none;">
+            <div class="summary-item">
+                <span>Thu tháng này:</span>
+                <span id="month-income" class="money plus">+0 đ</span>
+            </div>
+            <div class="summary-item">
+                <span>Chi tháng này:</span>
+                <span id="month-expense" class="money minus">-0 đ</span>
+            </div>
+            <div class="summary-item">
+                <span>Số dư tháng:</span>
+                <span id="month-balance" class="money">0 đ</span>
+            </div>
+        </div>
+        
         <ul id="list" class="list">
         </ul>
         <div id="show-more-container" style="text-align: center; margin: 10px 0; display: none;">

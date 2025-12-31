@@ -166,10 +166,32 @@ h3 {
   color: #333;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   position: relative;
   padding: 10px;
   margin: 10px 0;
   border-radius: 5px;
+}
+
+.transaction-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.transaction-text {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.transaction-date {
+  font-size: 12px;
+  color: #666;
+}
+
+.transaction-amount {
+  font-weight: bold;
+  margin-left: 10px;
+  white-space: nowrap;
 }
 
 /* Viền màu bên phải để phân biệt Thu/Chi */
@@ -325,6 +347,66 @@ input[type="number"] {
   background-color: #e0e0e0;
   border-color: #9c88ff;
   color: #9c88ff;
+}
+
+/* Bộ lọc tháng */
+.month-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+  background: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: var(--box-shadow);
+}
+
+.month-select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #dedede;
+  border-radius: 5px;
+  font-size: 14px;
+  background: white;
+}
+
+.month-nav-btn {
+  padding: 8px 12px;
+  border: 1px solid #dedede;
+  background: #f0f0f0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.month-nav-btn:hover {
+  background: #9c88ff;
+  color: white;
+  border-color: #9c88ff;
+}
+
+/* Tổng kết tháng */
+.month-summary {
+  background: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: var(--box-shadow);
+  margin: 15px 0;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+  font-weight: bold;
+  padding-top: 12px;
+  margin-top: 5px;
+  border-top: 2px solid #dedede;
 }
 
 /* Responsive cho màn hình nhỏ */
