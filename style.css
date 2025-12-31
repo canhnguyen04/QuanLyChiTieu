@@ -19,6 +19,88 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+/* Auth Container */
+.auth-container {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: var(--box-shadow);
+  width: 350px;
+  max-width: 90%;
+}
+
+.auth-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.auth-tab.active {
+  background: #9c88ff;
+  color: white;
+}
+
+.auth-form {
+  margin-top: 20px;
+}
+
+.auth-note {
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  margin-top: 20px;
+}
+
+/* App Container */
+.app-container {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #fff;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.logout-btn {
+  padding: 8px 15px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
 .container {
   margin: 30px auto;
   width: 350px; /* Kích thước giống màn hình điện thoại */

@@ -1,3 +1,145 @@
+// ===== FIREBASE CONFIGURATION =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBHF-R8x3kbj2wWBT3c-9qcfQ9JMoQCDps",
+  authDomain: "quanlychitieu-f9b7c.firebaseapp.com",
+  databaseURL: "https://quanlychitieu-f9b7c-default-rtdb.firebaseio.com",
+  projectId: "quanlychitieu-f9b7c",
+  storageBucket: "quanlychitieu-f9b7c.firebasestorage.app",
+  messagingSenderId: "1091480797172",
+  appId: "1:1091480797172:web:a5eefff7adad101dd343a1"
+};
+
+// Khởi tạo Firebase
+let app, auth, database;
+let currentUser = null;
+
+// Kiểm tra nếu Firebase đã được load
+if (typeof firebase !== 'undefined') {
+  app = firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  database = firebase.database();
+  
+  // Lắng nghe trạng thái đăng nhập
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      showApp();
+      loadFromFirebase();
+    } else {
+      currentUser = null;
+      showAuth();
+    }
+  });
+} else {
+  console.warn('Firebase chưa được cấu hình. Vui lòng xem file HUONG-DAN-FIREBASE.md');
+  // Fallback: Dùng LocalStorage như trước
+  showApp();
+}
+
+// ===== AUTHENTICATION FUNCTIONS =====
+function showLogin() {
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('register-form').style.display = 'none';
+  document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.auth-tab')[0].classList.add('active');
+}
+
+function showRegister() {
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'block';
+  document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+  document.querySelectorAll('.auth-tab')[1].classList.add('active');
+}
+
+function showAuth() {
+  document.getElementById('auth-container').style.display = 'block';
+  document.getElementById('app-container').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('auth-container').style.display = 'none';
+  document.getElementById('app-container').style.display = 'block';
+  if (currentUser) {
+    document.getElementById('user-email').textContent = currentUser.email;
+  }
+}
+
+// Đăng nhập
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    alert('Đăng nhập thành công!');
+  } catch (error) {
+    alert('Lỗi: ' + error.message);
+  }
+});
+
+// Đăng ký
+document.getElementById('register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('register-email').value;
+  const password = document.getElementById('register-password').value;
+  const confirm = document.getElementById('register-confirm').value;
+  
+  if (password !== confirm) {
+    alert('Mật khẩu không khớp!');
+    return;
+  }
+  
+  if (password.length < 6) {
+    alert('Mật khẩu phải có ít nhất 6 ký tự!');
+    return;
+  }
+  
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    alert('Đăng ký thành công!');
+    showLogin();
+  } catch (error) {
+    alert('Lỗi: ' + error.message);
+  }
+});
+
+// Đăng xuất
+function logout() {
+  if (confirm('Bạn có chắc muốn đăng xuất?')) {
+    auth.signOut();
+  }
+}
+
+// ===== FIREBASE SYNC FUNCTIONS =====
+function saveToFirebase() {
+  if (currentUser && database) {
+    database.ref('users/' + currentUser.uid + '/transactions').set(transactions);
+  }
+}
+
+function loadFromFirebase() {
+  if (currentUser && database) {
+    database.ref('users/' + currentUser.uid + '/transactions').once('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        transactions = data;
+        init();
+      }
+    });
+    
+    // Realtime sync
+    database.ref('users/' + currentUser.uid + '/transactions').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        transactions = data;
+        init();
+      }
+    });
+  }
+}
+
+// ===== ORIGINAL CODE =====
 const balance = document.getElementById('balance');
 const money_plus = document.getElementById('money-plus');
 const money_minus = document.getElementById('money-minus');
@@ -68,6 +210,7 @@ function addTransaction(e) {
     }
 
     updateLocalStorage();
+    saveToFirebase(); // Sync với Firebase
     init();
 
     // Xóa trắng ô nhập liệu sau khi thêm
@@ -135,6 +278,7 @@ function removeTransaction(id) {
   if (confirm('Bạn có chắc muốn xóa giao dịch này?')) {
     transactions = transactions.filter(transaction => transaction.id !== id);
     updateLocalStorage();
+    saveToFirebase(); // Sync với Firebase
     init();
   }
 }
