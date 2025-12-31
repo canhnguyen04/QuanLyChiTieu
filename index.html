@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ứng dụng quản lý thu chi cá nhân đơn giản và hiệu quả">
+    <meta name="theme-color" content="#9c88ff">
+    <title>Quản Lý Chi Tiêu Cá Nhân</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icon cho iOS -->
+    <link rel="apple-touch-icon" href="icon-192.svg">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2>Quản Lý Chi Tiêu</h2>
+
+    <div class="container">
+        <h4>Số dư hiện tại</h4>
+        <h1 id="balance">0 đ</h1>
+
+        <div class="inc-exp-container">
+            <div>
+                <h4>Thu Nhập</h4>
+                <p id="money-plus" class="money plus">+0 đ</p>
+            </div>
+            <div>
+                <h4>Chi Tiêu</h4>
+                <p id="money-minus" class="money minus">-0 đ</p>
+            </div>
+        </div>
+
+        <h3>Lịch sử giao dịch</h3>
+        <ul id="list" class="list">
+        </ul>
+
+        <h3>Thêm giao dịch mới</h3>
+        <form id="form">
+            <div class="form-control">
+                <label for="text">Nội dung</label>
+                <input type="text" id="text" placeholder="Ví dụ: Lương, Ăn sáng..." />
+            </div>
+            
+            <div class="form-control">
+                <label>Loại giao dịch</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="type" value="income" checked />
+                        <span class="radio-text income-radio">Thu Nhập</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="type" value="expense" />
+                        <span class="radio-text expense-radio">Chi Tiêu</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-control">
+                <label for="amount">Số tiền</label>
+                <input type="number" id="amount" placeholder="Nhập số tiền..." min="0" />
+            </div>
+            
+            <button class="btn">Thêm Giao Dịch</button>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+    
+    <!-- Đăng ký Service Worker cho PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker đã đăng ký!'))
+                    .catch(err => console.log('Lỗi Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>

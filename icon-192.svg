@@ -1,0 +1,5 @@
+<!-- Tạo icon đơn giản bằng SVG -->
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" fill="#9c88ff" rx="30"/>
+  <text x="96" y="120" font-size="80" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold">💰</text>
+</svg>
