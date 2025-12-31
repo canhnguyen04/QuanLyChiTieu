@@ -166,9 +166,9 @@ amount.addEventListener('blur', (e) => {
   let value = e.target.value.replace(/,/g, '');
   
   // Nếu có giá trị và là số
-  if (value && !isNaN(value)) {
-    // Format với dấu phẩy
-    const formatted = Number(value).toLocaleString('en-US');
+  if (value && !isNaN(value) && value !== '') {
+    // Format thủ công bằng regex để không mất số
+    const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     e.target.value = formatted;
   }
 });
