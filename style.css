@@ -308,6 +308,25 @@ input[type="number"] {
   background-color: #8b75ff;
 }
 
+/* Nút phụ (Xem tất cả) */
+.btn-secondary {
+  cursor: pointer;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #dedede;
+  display: inline-block;
+  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 5px;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background-color: #e0e0e0;
+  border-color: #9c88ff;
+  color: #9c88ff;
+}
+
 /* Responsive cho màn hình nhỏ */
 @media (max-width: 400px) {
   .container {

@@ -160,6 +160,9 @@ let transactions =
 // Biến để lưu ID đang chỉnh sửa
 let editingId = null;
 
+// Biến để track xem có hiển thị tất cả không
+let showAll = false;
+
 // 1.1. Thêm format số tiền khi blur (bấm ra ngoài input)
 amount.addEventListener('blur', (e) => {
   // Lấy giá trị và xóa tất cả dấu phẩy cũ
@@ -323,9 +326,33 @@ function updateLocalStorage() {
 // 8. Hàm khởi chạy ứng dụng
 function init() {
   list.innerHTML = '';
-  transactions.forEach(addTransactionDOM);
+  
+  // Sắp xếp giao dịch mới nhất lên đầu
+  const sortedTransactions = [...transactions].reverse();
+  
+  // Chỉ hiển thị 5 giao dịch gần nhất nếu chưa bấm "Xem tất cả"
+  const displayTransactions = showAll ? sortedTransactions : sortedTransactions.slice(0, 5);
+  
+  displayTransactions.forEach(addTransactionDOM);
   updateValues();
+  
+  // Hiển thị/ẩn nút "Xem tất cả"
+  const showMoreContainer = document.getElementById('show-more-container');
+  const showMoreBtn = document.getElementById('show-more-btn');
+  
+  if (transactions.length > 5) {
+    showMoreContainer.style.display = 'block';
+    showMoreBtn.textContent = showAll ? 'Thu gọn' : `Xem tất cả (${transactions.length - 5} giao dịch)`;
+  } else {
+    showMoreContainer.style.display = 'none';
+  }
 }
+
+// Xử lý nút "Xem tất cả"
+document.getElementById('show-more-btn').addEventListener('click', () => {
+  showAll = !showAll;
+  init();
+});
 
 init();
 
