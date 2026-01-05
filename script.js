@@ -157,6 +157,20 @@ const localStorageTransactions = JSON.parse(
 let transactions =
   localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
 
+// Migration: Thêm date cho giao dịch cũ không có date
+transactions = transactions.map(t => {
+  if (!t.date) {
+    // Gán date mặc định là đầu tháng hiện tại cho dữ liệu cũ
+    t.date = new Date().toISOString();
+  }
+  return t;
+});
+
+// Lưu lại sau khi migration
+if (transactions.length > 0) {
+  localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
 // Biến để lưu ID đang chỉnh sửa
 let editingId = null;
 
@@ -339,7 +353,9 @@ function init() {
   const filteredTransactions = transactions.filter(t => {
     if (!t.date) return false;
     const d = new Date(t.date);
-    return d.getMonth() === currentViewMonth && d.getFullYear() === currentViewYear;
+    // Chuyển sang timezone Việt Nam để so sánh tháng
+    const vnDate = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+    return vnDate.getMonth() === currentViewMonth && vnDate.getFullYear() === currentViewYear;
   });
   
   // Sắp xếp giao dịch mới nhất lên đầu
