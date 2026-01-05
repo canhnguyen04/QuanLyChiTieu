@@ -270,9 +270,22 @@ function addTransactionDOM(transaction) {
 
   // Định dạng số tiền có dấu phẩy (ví dụ: 100,000)
   const formattedAmount = Math.abs(transaction.amount).toLocaleString('vi-VN');
+  
+  // Format ngày giờ theo timezone Việt Nam (UTC+7)
+  const date = transaction.date ? new Date(transaction.date) : new Date();
+  
+  // Chuyển sang giờ Việt Nam
+  const vnDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+  
+  const dateStr = `${vnDate.getDate().toString().padStart(2, '0')}/${(vnDate.getMonth() + 1).toString().padStart(2, '0')}/${vnDate.getFullYear()}`;
+  const timeStr = `${vnDate.getHours().toString().padStart(2, '0')}:${vnDate.getMinutes().toString().padStart(2, '0')}`;
 
   item.innerHTML = `
-    ${transaction.text} <span>${sign}${formattedAmount} đ</span>
+    <div class="transaction-content">
+      <div class="transaction-text">${transaction.text}</div>
+      <div class="transaction-date">${dateStr} ${timeStr}</div>
+    </div>
+    <span class="transaction-amount">${sign}${formattedAmount} đ</span>
     <button class="edit-btn" onclick="editTransaction(${transaction.id})">✏️</button>
     <button class="delete-btn" onclick="removeTransaction(${transaction.id})">x</button>
   `;
