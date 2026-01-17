@@ -115,6 +115,7 @@ function logout() {
 function saveToFirebase() {
   if (currentUser && database) {
     database.ref('users/' + currentUser.uid + '/transactions').set(transactions);
+    database.ref('users/' + currentUser.uid + '/quickNotes').set(quickNotes);
   }
 }
 
@@ -128,12 +129,28 @@ function loadFromFirebase() {
       }
     });
     
+    database.ref('users/' + currentUser.uid + '/quickNotes').once('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        quickNotes = data;
+        displayQuickNotes();
+      }
+    });
+    
     // Realtime sync
     database.ref('users/' + currentUser.uid + '/transactions').on('value', (snapshot) => {
       const data = snapshot.val();
       if (data) {
         transactions = data;
         init();
+      }
+    });
+    
+    database.ref('users/' + currentUser.uid + '/quickNotes').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        quickNotes = data;
+        displayQuickNotes();
       }
     });
   }
@@ -156,6 +173,17 @@ const localStorageTransactions = JSON.parse(
 // Nếu chưa có dữ liệu thì dùng mảng rỗng
 let transactions =
   localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
+
+// Quản lý ghi chú nhanh
+const localStorageQuickNotes = JSON.parse(
+  localStorage.getItem('quickNotes')
+);
+
+let quickNotes = 
+  localStorage.getItem('quickNotes') !== null ? localStorageQuickNotes : [];
+
+// Biến để lưu ID ghi chú đang chỉnh sửa
+let editingNoteId = null;
 
 // Migration: Thêm date cho giao dịch cũ không có date
 transactions = transactions.map(t => {
@@ -492,6 +520,187 @@ document.getElementById('show-more-btn').addEventListener('click', () => {
 });
 
 init();
+displayQuickNotes();
 
 // Lắng nghe sự kiện bấm nút Thêm
 form.addEventListener('submit', addTransaction);
+
+// ===== QUICK NOTES FUNCTIONS =====
+// Hiển thị modal thêm ghi chú nhanh
+function showAddQuickNote() {
+  editingNoteId = null;
+  document.getElementById('modal-title').textContent = 'Thêm ghi chú nhanh';
+  document.getElementById('note-text').value = '';
+  document.getElementById('note-amount').value = '';
+  document.querySelector('input[name="note-type"][value="income"]').checked = true;
+  document.getElementById('quick-note-modal').style.display = 'flex';
+}
+
+// Đóng modal
+function closeQuickNoteModal() {
+  document.getElementById('quick-note-modal').style.display = 'none';
+  editingNoteId = null;
+}
+
+// Hiển thị modal sửa ghi chú nhanh
+function editQuickNote(id) {
+  const note = quickNotes.find(n => n.id === id);
+  if (note) {
+    editingNoteId = id;
+    document.getElementById('modal-title').textContent = 'Sửa ghi chú nhanh';
+    document.getElementById('note-text').value = note.text;
+    document.getElementById('note-amount').value = Math.abs(note.amount).toLocaleString('vi-VN');
+    
+    const type = note.amount < 0 ? 'expense' : 'income';
+    document.querySelector(`input[name="note-type"][value="${type}"]`).checked = true;
+    
+    document.getElementById('quick-note-modal').style.display = 'flex';
+  }
+}
+
+// Format số tiền cho ghi chú
+const noteAmountInput = document.getElementById('note-amount');
+noteAmountInput.addEventListener('blur', (e) => {
+  let value = e.target.value.replace(/,/g, '').trim();
+  if (value && !isNaN(value) && value !== '') {
+    const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    e.target.value = formatted;
+  }
+});
+
+noteAmountInput.addEventListener('focus', (e) => {
+  let value = e.target.value.replace(/,/g, '');
+  if (value) {
+    e.target.value = value;
+  }
+});
+
+// Xử lý form ghi chú nhanh
+document.getElementById('quick-note-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  const noteText = document.getElementById('note-text').value.trim();
+  const noteAmount = document.getElementById('note-amount').value.replace(/,/g, '').trim();
+  const noteType = document.querySelector('input[name="note-type"]:checked').value;
+  
+  if (!noteText || !noteAmount) {
+    alert('Vui lòng nhập đầy đủ thông tin!');
+    return;
+  }
+  
+  const finalAmount = noteType === 'expense' ? -Math.abs(+noteAmount) : Math.abs(+noteAmount);
+  
+  if (editingNoteId !== null) {
+    // Sửa ghi chú
+    const index = quickNotes.findIndex(n => n.id === editingNoteId);
+    if (index !== -1) {
+      quickNotes[index].text = noteText;
+      quickNotes[index].amount = finalAmount;
+    }
+  } else {
+    // Thêm ghi chú mới
+    const newNote = {
+      id: generateID(),
+      text: noteText,
+      amount: finalAmount
+    };
+    quickNotes.push(newNote);
+  }
+  
+  updateQuickNotesStorage();
+  displayQuickNotes();
+  closeQuickNoteModal();
+});
+
+// Hiển thị danh sách ghi chú nhanh
+function displayQuickNotes() {
+  const container = document.getElementById('quick-notes-list');
+  container.innerHTML = '';
+  
+  if (quickNotes.length === 0) {
+    container.innerHTML = '<p class="no-notes">Chưa có ghi chú nhanh nào. Thêm ghi chú để thêm giao dịch nhanh hơn!</p>';
+    return;
+  }
+  
+  quickNotes.forEach(note => {
+    const noteEl = document.createElement('div');
+    noteEl.classList.add('quick-note-item');
+    noteEl.classList.add(note.amount < 0 ? 'expense' : 'income');
+    
+    const sign = note.amount < 0 ? '-' : '+';
+    const formattedAmount = Math.abs(note.amount).toLocaleString('vi-VN');
+    
+    noteEl.innerHTML = `
+      <div class="quick-note-content">
+        <span class="quick-note-text">${note.text}</span>
+        <span class="quick-note-amount">${sign}${formattedAmount} đ</span>
+      </div>
+      <div class="quick-note-actions">
+        <button onclick="useQuickNote(${note.id})" class="btn-use" title="Sử dụng">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5l-6 6-3-3"/>
+          </svg>
+        </button>
+        <button onclick="editQuickNote(${note.id})" class="btn-edit" title="Sửa">✏️</button>
+        <button onclick="deleteQuickNote(${note.id})" class="btn-delete" title="Xóa">🗑️</button>
+      </div>
+    `;
+    
+    container.appendChild(noteEl);
+  });
+}
+
+// Sử dụng ghi chú nhanh (thêm vào giao dịch)
+function useQuickNote(id) {
+  const note = quickNotes.find(n => n.id === id);
+  if (note) {
+    const transaction = {
+      id: generateID(),
+      text: note.text,
+      amount: note.amount,
+      date: new Date().toISOString()
+    };
+    
+    transactions.push(transaction);
+    updateLocalStorage();
+    saveToFirebase();
+    init();
+    
+    // Hiển thị thông báo
+    showNotification(`Đã thêm: ${note.text}`);
+  }
+}
+
+// Xóa ghi chú nhanh
+function deleteQuickNote(id) {
+  if (confirm('Bạn có chắc muốn xóa ghi chú này?')) {
+    quickNotes = quickNotes.filter(n => n.id !== id);
+    updateQuickNotesStorage();
+    displayQuickNotes();
+  }
+}
+
+// Cập nhật localStorage cho ghi chú nhanh
+function updateQuickNotesStorage() {
+  localStorage.setItem('quickNotes', JSON.stringify(quickNotes));
+  saveToFirebase();
+}
+
+// Hiển thị thông báo tạm thời
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.className = 'notification';
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.classList.add('show');
+  }, 10);
+  
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  }, 2000);
+}

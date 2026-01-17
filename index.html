@@ -115,6 +115,48 @@
             <button id="show-more-btn" class="btn-secondary">Xem tất cả</button>
         </div>
 
+        <h3>Ghi chú nhanh</h3>
+        <div class="quick-notes">
+            <div id="quick-notes-list" class="quick-notes-list">
+                <!-- Các ghi chú nhanh sẽ được thêm ở đây -->
+            </div>
+            <button onclick="showAddQuickNote()" class="btn-secondary">+ Thêm ghi chú nhanh</button>
+        </div>
+
+        <!-- Modal thêm/sửa ghi chú nhanh -->
+        <div id="quick-note-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="modal-title">Thêm ghi chú nhanh</h3>
+                <form id="quick-note-form">
+                    <div class="form-control">
+                        <label for="note-text">Nội dung</label>
+                        <input type="text" id="note-text" placeholder="Ví dụ: Ăn sáng" required />
+                    </div>
+                    <div class="form-control">
+                        <label for="note-amount">Số tiền</label>
+                        <input type="text" id="note-amount" placeholder="Nhập số tiền..." inputmode="numeric" required />
+                    </div>
+                    <div class="form-control">
+                        <label>Loại giao dịch</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="note-type" value="income" checked />
+                                <span class="radio-text income-radio">Thu Nhập</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="note-type" value="expense" />
+                                <span class="radio-text expense-radio">Chi Tiêu</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn">Lưu</button>
+                        <button type="button" onclick="closeQuickNoteModal()" class="btn-secondary">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <h3>Thêm giao dịch mới</h3>
         <form id="form">
             <div class="form-control">
